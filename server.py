@@ -92,8 +92,15 @@ def handle(client):
     while True:
         try:
             message = client.recv(1024)
+            if not message:
+                raise ConnectionResetError("Клієнт закрив з'єднання")
             broadcast(message, sender=client)
-        except:
+        except (ConnectionResetError, ConnectionAbortedError):
+            print("Клієнт відключився.")
+            remove_client(client)
+            break
+        except Exception as e:
+            print(f"Помилка у клієнта: {e}")
             remove_client(client)
             break
 
@@ -120,7 +127,7 @@ def receive():
             nicknames.append(nickname)
             clients.append(client)
 
-            print(f"Логін користувача: {nickname}")
+            print(f"Нікнейм клієнта: {nickname}")
             broadcast(f"{nickname} приєднався до чату".encode("utf-8"))
             client.send("Ви підключилися до сервера".encode("utf-8"))
 
@@ -129,7 +136,6 @@ def receive():
             thread.start()
         except Exception as e:
             print(f"Помилка під час прийому з'єднання: {e}")
-            break
 
 try:
     receive()
