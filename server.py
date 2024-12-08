@@ -74,10 +74,15 @@ def broadcast(message, sender=None):
     """Надсилання повідомлення всім клієнтам, крім відправника."""
     for client in clients:
         try:
+            # Додаємо нік тільки якщо відправник вказаний
             if sender is not None:
                 index = clients.index(sender)
                 sender_nickname = nicknames[index]
-                message = f"{sender_nickname}: {message.decode('utf-8')}".encode('utf-8')
+
+                # Перевіряємо, чи повідомлення ще не містить ніка
+                if not message.decode('utf-8').startswith(f"{sender_nickname}: "):
+                    message = f"{sender_nickname}: {message.decode('utf-8')}".encode('utf-8')
+
             client.send(message)
         except:
             remove_client(client)
